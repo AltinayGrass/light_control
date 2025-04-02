@@ -87,24 +87,25 @@ private:
     void battery_callback(const sensor_msgs::msg::BatteryState::SharedPtr msg)
     {
         bool new_charging = msg->power_supply_status == sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_CHARGING;
-        bool new_battery_full = msg->voltage >= 28.2;
-
+        bool new_battery_full = msg->voltage >= 27.5;
+    
         if (new_charging != charging_ || new_battery_full != battery_full_)
         {
             charging_ = new_charging;
-            battery_full_ = new_battery_full;
-
+            battery_full_ = new_battery_full && new_charging;
+    
             if (battery_full_)
                 RCLCPP_INFO(this->get_logger(), "Battery full! Voltage: %.2fV", msg->voltage);
             else if (charging_)
                 RCLCPP_INFO(this->get_logger(), "Battery charging... Voltage: %.2fV", msg->voltage);
             else
-                {
-                    charging_= false;
-                    battery_full_ = false;
-                }
+                RCLCPP_INFO(this->get_logger(), "Battery not charging and not full.");
+    
+            // Şarj durumu değiştiğinde ışıkların güncellenmesini sağlamak için timer_callback'i çağır
+            timer_callback();
         }
     }
+    
 
     void timer_callback()
     {
@@ -131,9 +132,17 @@ private:
             stop_counter_++;
         }
 
+        if (!charging_ && !battery_full_ && last_charging_)
+        {
+            RCLCPP_INFO(this->get_logger(), "Charging stopped, switching to stop mode.");
+            new_direction = 0;  // Hareket yokmuş gibi algıla
+            stop_counter_ = 10; // Direkt stop moduna girmesi için sayacı artır
+            last_stopped_ = false;
+        }
+        
         if (new_direction == direction_ && emg_ == last_emg_ && charging_ == last_charging_ && battery_full_ == last_battery_full_ && ( last_stopped_ || stop_counter_ < 10))
         {
-            return;
+                return; // Gerçekten hiçbir değişiklik olmadıysa erken çık.
         }
 
         control_msgs::msg::DynamicInterfaceGroupValues control_msg;
@@ -177,10 +186,6 @@ private:
                     values_struct.values = {1, 1, 1, 0, 1, 1, 1, 0};
                     RCLCPP_INFO(this->get_logger(), "Vehicle stopped for 1 second! Changing light mode.");
                     last_stopped_ = true;
-                }
-                else
-                {
-                    return;
                 }
             }
         }
