@@ -190,8 +190,11 @@ private:
             }
         }
 
-        control_msg.interface_values.push_back(values_struct);
-        publisher_->publish(control_msg);
+        if (!values_struct.values.empty()) 
+        {
+            control_msg.interface_values.push_back(values_struct);
+            publisher_->publish(control_msg);
+        } 
 
         direction_ = new_direction;
         last_emg_ = emg_;
