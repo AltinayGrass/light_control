@@ -87,7 +87,7 @@ private:
     void battery_callback(const sensor_msgs::msg::BatteryState::SharedPtr msg)
     {
         bool new_charging = msg->power_supply_status == sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_CHARGING;
-        bool new_battery_full = msg->voltage >= 27.5;
+        bool new_battery_full = msg->voltage >= 29.5;
     
         if (new_charging != charging_ || new_battery_full != battery_full_)
         {
@@ -98,11 +98,13 @@ private:
                 RCLCPP_INFO(this->get_logger(), "Battery full! Voltage: %.2fV", msg->voltage);
             else if (charging_)
                 RCLCPP_INFO(this->get_logger(), "Battery charging... Voltage: %.2fV", msg->voltage);
-            else
+            else{
                 RCLCPP_INFO(this->get_logger(), "Battery not charging and not full.");
-    
+                charging_= false;
+                battery_full_ = false;
+                }
             // Şarj durumu değiştiğinde ışıkların güncellenmesini sağlamak için timer_callback'i çağır
-            timer_callback();
+            // timer_callback();
         }
     }
     
@@ -115,13 +117,13 @@ private:
         }
 
         int new_direction = 0;
-        if (last_twist_x_ < -0.05)
+        if (last_twist_x_ < -0.01)
         {
             new_direction = -1;
             stop_counter_ = 0;
             last_stopped_ = false;
         }
-        else if (last_twist_x_ > 0.05)
+        else if (last_twist_x_ > 0.01)
         {
             new_direction = 1;
             stop_counter_ = 0;
