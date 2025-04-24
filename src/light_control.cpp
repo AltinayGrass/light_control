@@ -158,16 +158,19 @@ private:
         {
             values_struct.values = {1, 0, 0, 0, 1, 0, 0, 0};
             RCLCPP_INFO(this->get_logger(), "Battery full! Special full-charge light pattern.");
+            last_stopped_ = true;
         }
         else if (charging_)
         {
             values_struct.values = {1, 1, 0, 0, 1, 1, 0, 0};
             RCLCPP_INFO(this->get_logger(), "Charging mode active!");
+            last_stopped_ = true;
         }
         else if (emg_ == 0)
         {
             values_struct.values = {0, 1, 1, 0, 0, 1, 1, 0};
             RCLCPP_WARN(this->get_logger(), "Emergency mode activated! Red lights FLASH");
+            last_stopped_ = true;
         }
         else
         {
