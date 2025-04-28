@@ -8,14 +8,23 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(control_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 add_executable(light_control src/light_control.cpp)
 ament_target_dependencies(light_control rclcpp nav_msgs control_msgs)
 
+add_executable(detected_dock_pose_publisher src/detected_dock_pose_publisher.cpp)
+ament_target_dependencies(detected_dock_pose_publisher
+  rclcpp
+  geometry_msgs
+  tf2_ros
+)
+
 install(TARGETS
-  light_control
+  light_control detected_dock_pose_publisher
   DESTINATION lib/${PROJECT_NAME}
 )
 
