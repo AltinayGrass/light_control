@@ -87,7 +87,7 @@ private:
     void battery_callback(const sensor_msgs::msg::BatteryState::SharedPtr msg)
     {
         bool new_charging = msg->power_supply_status == sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_CHARGING;
-        bool new_battery_full = msg->voltage >= 29.5;
+        bool new_battery_full = msg->voltage >= 29.3;
     
         if (new_charging != charging_ || new_battery_full != battery_full_)
         {
